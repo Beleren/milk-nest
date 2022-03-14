@@ -1,73 +1,45 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+# Injeção de dependências
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+- O que é?
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+  O termo `injeção de dependência`(dependency injection DI) é uma interpretação menos genérica de `inversão de controle`(inversion of control IoC). O objetivo da DI é desacoplar um comportamento de uma funcionalidade (ex: uma classe usuário que necessita de um meio para se comunicar com uma fila).
 
-## Description
+  https://martinfowler.com/articles/injection.html
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Installation
+- O que resolve?
 
-```bash
-$ npm install
-```
+  A DI permite a separação da aplicação em camadas: organização com limitação de comportamentos de classes, facilita mock de classes em testes, possibilita criação de camada anti-corrupção, etc.
 
-## Running the app
 
-```bash
-# development
-$ npm run start
+- Como é feito em JS/TS?
 
-# watch mode
-$ npm run start:dev
+  No exemplo do Martin Fowler ele dá 3 modos de implementação de DI: via `interface`, `setter` e `constructor`.
 
-# production mode
-$ npm run start:prod
-```
+  Basicamente na injeção via `constructor` nós podemos imaginar uma classe que recebe um serviço via construtor para uso interno; a injeção via `setter` é uma classe que possui uma função que atribui um valor a uma variável interna da classe quando chamada e a injeção via `interface` é tipo o que o Nest faz, acho, mas sem usar interfaces do TS, já que não existe em JS.
 
-## Test
+- Como é feito no Nest?
 
-```bash
-# unit tests
-$ npm run test
+  Faz uma maracutaia hard com a API do pacote `reflact-metadata` pros devs não precisarem se preocupar com a ordem de DI. Não entendi muito bem qual a vantagem disso em relação à performance, mas é uma funcionalidade que é bem ergonômica pra devs. 
+  
+  Pode ser interessante para um projeto futuro de gerador de dados falsos por definição de propriedades de interfaces. -> https://github.com/google/intermock
 
-# e2e tests
-$ npm run test:e2e
+  https://www.npmjs.com/package/reflect-metadata
+  https://www.youtube.com/watch?v=vYFhHVMetPg
+  https://wanago.io/2020/06/15/api-with-nestjs-6-looking-into-dependency-injection-and-modules/#:~:text=NestJS%20uses%20the%20root%20module,of%20registering%20and%20verifying%20users.
 
-# test coverage
-$ npm run test:cov
-```
 
-## Support
+- O que são módulos do nest?
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+  São contextos diferentes numa arquitetura DDD, que podem funcionar como serviços numa aplicação ou plugins de implementações.
 
-## Stay in touch
+- Como módulos são utilizados em testes?
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+  Módulos são geralmente utilizados em testes de controllers que necessitam que o módulo faça a DI para utilização em testes unitários ou e2e, possibilitando mocking pelo jest.
 
-## License
+  https://docs.nestjs.com/fundamentals/testing#testing
 
-Nest is [MIT licensed](LICENSE).
+
+- O que são módulos dinâmicos e o que resolvem?
+
+  Geralmente usados para plugins onde conseguimos configurar parâmetros diferentes em diferentes DIs: urls de conexões de banco, nome de filas de brokers, etc. Os módulos dinâmicos usam um padrão de `register` e `registerAsync` do próprio nest.
